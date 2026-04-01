@@ -400,15 +400,15 @@
 
 <script>
 // ── GitHub Config ──────────────────────────────────────────────────────────
-// const GH_TOKEN = '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';
-// const GH_REPO  = 'gouravbhati152/qa-manager';
-// const GH_FILE  = 'data.json';
-// const GH_API   = `https://api.github.com/repos/${GH_REPO}/contents/${GH_FILE}`;
-// const GH_HEAD  = {
-//   'Authorization': `Bearer ${GH_TOKEN}`,
-//   'Content-Type': 'application/json',
-//   'Accept': 'application/vnd.github+json'
-// };
+const GH_TOKEN = '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';
+const GH_REPO  = 'gouravbhati152/qa-manager';
+const GH_FILE  = 'data.json';
+const GH_API   = `https://api.github.com/repos/${GH_REPO}/contents/${GH_FILE}`;
+const GH_HEAD  = {
+  'Authorization': `token ${GH_TOKEN}`,
+  'Content-Type': 'application/json',
+  'Accept': 'application/vnd.github+json'
+};
 
 // ── Seed data (your existing Q&As) ────────────────────────────────────────
 const SEED_SESSIONS = [
