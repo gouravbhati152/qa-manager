@@ -399,16 +399,28 @@
 <div class="toast" id="toast"></div>
 
 <script>
-// ── GitHub Config ──────────────────────────────────────────────────────────
-const GH_TOKEN = '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';
+let GH_TOKEN = localStorage.getItem('gh_manager_token');
+
+// If no token exists, ask for it (GitHub won't see this!)
+if (!GH_TOKEN) {
+    GH_TOKEN = prompt("Please enter your GitHub Personal Access Token:");
+    if (GH_TOKEN) {
+        localStorage.setItem('gh_manager_token', GH_TOKEN);
+    }
+}
+
 const GH_REPO  = 'gouravbhati152/qa-manager';
 const GH_FILE  = 'data.json';
 const GH_API   = `https://api.github.com/repos/${GH_REPO}/contents/${GH_FILE}`;
-const GH_HEAD  = {
-  'Authorization': `token ${GH_TOKEN}`,
-  'Content-Type': 'application/json',
-  'Accept': 'application/vnd.github+json'
-};
+
+// Helper to get fresh headers
+function getHeaders() {
+    return {
+        'Authorization': `token ${GH_TOKEN}`,
+        'Accept': 'application/vnd.github+json',
+        'Content-Type': 'application/json'
+    };
+}
 
 // ── Seed data (your existing Q&As) ────────────────────────────────────────
 const SEED_SESSIONS = [
@@ -453,57 +465,70 @@ function setStatus(state, msg) {
 
 // ── GitHub load ────────────────────────────────────────────────────────────
 async function loadData() {
-  setStatus('loading', 'Connecting to GitHub…');
-  try {
-    const res = await fetch(GH_API + '?t=' + Date.now(), { headers: GH_HEAD });
-    if (!res.ok) throw new Error('GitHub fetch failed: ' + res.status);
-    const json = await res.json();
-    ghFileSha = json.sha;
-    const content = json.content.replace(/\n/g, '');
-    const decoded = JSON.parse(atob(content));
+    setStatus('loading', 'Connecting to GitHub…');
+    try {
+        // Use the helper function for headers
+        const res = await fetch(GH_API + '?t=' + Date.now(), { 
+            headers: getHeaders() 
+        });
 
-    if (!decoded.sessions || decoded.sessions.length === 0) {
-      // First run — push seed data to GitHub
-      sessions = SEED_SESSIONS;
-      qas      = SEED_QAS;
-      await save();
-    } else {
-      sessions = decoded.sessions;
-      qas      = decoded.qas || [];
+        if (res.status === 401) {
+            localStorage.removeItem('gh_manager_token'); // Clear bad token
+            throw new Error('Invalid Token. Refresh page to re-enter.');
+        }
+
+        if (!res.ok) throw new Error('GitHub fetch failed: ' + res.status);
+        
+        const json = await res.json();
+        ghFileSha = json.sha;
+        
+        // Better decoding to handle special characters/emojis
+        const content = json.content.replace(/\n/g, '');
+        const decoded = JSON.parse(decodeURIComponent(escape(atob(content))));
+
+        if (!decoded.sessions || decoded.sessions.length === 0) {
+            sessions = SEED_SESSIONS;
+            qas = SEED_QAS;
+            await save(); 
+        } else {
+            sessions = decoded.sessions;
+            qas = decoded.qas || [];
+        }
+        setStatus('saved', 'Synced with GitHub');
+    } catch(e) {
+        console.error('GitHub load error:', e);
+        sessions = SEED_SESSIONS;
+        qas = SEED_QAS;
+        setStatus('error', e.message.includes('Token') ? 'Auth Error' : 'Offline');
+        showToast(e.message);
     }
-    setStatus('saved', 'Synced with GitHub');
-  } catch(e) {
-    console.error('GitHub load error:', e);
-    // Fall back to seed data so app still works offline
-    sessions = SEED_SESSIONS;
-    qas      = SEED_QAS;
-    setStatus('error', 'Offline — data not saved');
-    showToast('Could not reach GitHub. Working offline.');
-  }
-  activeSessionId = sessions[0]?.id || null;
+    activeSessionId = sessions[0]?.id || null;
 }
-
 // ── GitHub save ────────────────────────────────────────────────────────────
 async function save() {
-  setStatus('saving', 'Saving…');
-  try {
-    const body    = { sessions, qas };
-    const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(body, null, 2))));
-    const payload = { message: 'update qa data', content: encoded, sha: ghFileSha };
-    const res = await fetch(GH_API, { method: 'PUT', headers: GH_HEAD, body: JSON.stringify(payload) });
-    if (!res.ok) {
-      const err = await res.json();
-      throw new Error(err.message || 'save failed');
+    setStatus('saving', 'Saving to GitHub...');
+    try {
+        const body = {
+            message: 'Update QA data',
+            content: btoa(unescape(encodeURIComponent(JSON.stringify({ sessions, qas })))),
+            sha: ghFileSha
+        };
+
+        const res = await fetch(GH_API, {
+            method: 'PUT',
+            headers: getHeaders(),
+            body: JSON.stringify(body)
+        });
+
+        if (!res.ok) throw new Error('Save failed');
+        
+        const updatedJson = await res.json();
+        ghFileSha = updatedJson.content.sha; // Update SHA for next save
+        setStatus('saved', 'Changes saved');
+    } catch (e) {
+        setStatus('error', 'Save failed');
+        console.error(e);
     }
-    const json = await res.json();
-    ghFileSha = json.content.sha;
-    setStatus('saved', 'Saved to GitHub ✓');
-  } catch(e) {
-    console.error('GitHub save error:', e);
-    setStatus('error', 'Save failed: ' + e.message);
-    showToast('Save failed — ' + e.message);
-    throw e; // re-throw so callers know
-  }
 }
 
 // ── Sessions ───────────────────────────────────────────────────────────────
