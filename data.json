@@ -34,7 +34,7 @@
       "id": "qa-1782988064398",
       "sessionId": "sess-1775111710302",
       "question": "Select only the name and salary columns.   Filter employees whose salary is greater than 60000.   Display the result.",
-      "answer": "```\ndf.select(\"name\", \"salary\") \\\n  .filter(col(\"salary\") > 60000) \\\n  .show()\n  ```\n  OR\n  \n  df.filter(df.salary > 60000) \\\n  .select(\"name\", \"salary\") \\\n  .show()"
+      "answer": "```\ndf.select(\"name\", \"salary\") \\\n  .filter(col(\"salary\") > 60000) \\\n  .show()\n  ```\n  OR\n  ```\n  df.filter(df.salary > 60000) \\\n  .select(\"name\", \"salary\") \\\n  .show()\n```"
     },
     {
       "id": "qa-1778327995760",
