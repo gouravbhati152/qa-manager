@@ -31,6 +31,12 @@
   ],
   "qas": [
     {
+      "id": "qa-1782995341020",
+      "sessionId": "sess-1775111710302",
+      "question": "Find the second highest salary",
+      "answer": "```\nfrom pyspark.sql.functions import dense_rank, col\nfrom pyspark.sql.window import Window\n\nwindow_spec = Window.orderBy(col(\"salary\").desc())\n\ndf.withColumn(\n    \"rank\",\n    dense_rank().over(window_spec)\n).filter(\n    col(\"rank\") == 2\n).show()\n```"
+    },
+    {
       "id": "qa-1782991288404",
       "sessionId": "sess-1775111710302",
       "question": "suppose we want to remove the null value in salary column",
