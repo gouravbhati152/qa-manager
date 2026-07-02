@@ -261,6 +261,44 @@
     }
     .toast.show { opacity: 1; transform: translateY(0); }
 
+    /* ── Token Modal ── */
+    .modal-backdrop {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.35);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 9998; backdrop-filter: blur(2px);
+    }
+    .modal-backdrop.hidden { display: none; }
+    .modal {
+      background: var(--surface); border-radius: 14px; padding: 1.75rem;
+      width: 100%; max-width: 420px; box-shadow: 0 8px 40px rgba(0,0,0,0.18);
+      margin: 1rem;
+    }
+    .modal h3 {
+      font-family: 'Playfair Display', serif; font-size: 1.1rem;
+      font-weight: 500; margin-bottom: 0.4rem;
+    }
+    .modal p { font-size: 13px; color: var(--text-secondary); margin-bottom: 1.1rem; line-height: 1.6; }
+    .modal p a { color: var(--accent); text-decoration: none; }
+    .modal p a:hover { text-decoration: underline; }
+    .modal-field { margin-bottom: 1rem; }
+    .modal-field label { display: block; font-size: 12px; font-weight: 500; color: var(--text-secondary); margin-bottom: 5px; }
+    .modal-field input {
+      width: 100%; padding: 9px 12px; border: 1px solid var(--border);
+      border-radius: 8px; font-family: 'JetBrains Mono', monospace; font-size: 13px;
+      color: var(--text-primary); background: var(--bg);
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    .modal-field input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(44,95,74,0.12); }
+    .modal-field input.error { border-color: var(--danger); }
+    .modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 1.25rem; }
+    .token-btn {
+      display: flex; align-items: center; gap: 6px; width: 100%; padding: 7px 10px;
+      background: transparent; border: 1px solid var(--border); border-radius: 8px;
+      font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 500;
+      color: var(--text-secondary); cursor: pointer; margin-top: 6px; transition: all 0.15s;
+    }
+    .token-btn:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-light); }
+
     /* ── Loading overlay ── */
     #loading-overlay {
       position: fixed; inset: 0; background: var(--bg);
@@ -295,6 +333,11 @@
       <button class="new-session-btn" onclick="createSession()">
         <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 2a.75.75 0 01.75.75v4.5h4.5a.75.75 0 010 1.5h-4.5v4.5a.75.75 0 01-1.5 0v-4.5h-4.5a.75.75 0 010-1.5h4.5v-4.5A.75.75 0 018 2z"/></svg>
         New Session
+      </button>
+      <div class="export-divider">Settings</div>
+      <button class="export-btn" onclick="updateToken()">
+        <svg width="13" height="13" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M8 7a5 5 0 113.61 4.804l-1.903 1.903A1 1 0 019 14H8v1a1 1 0 01-1 1H6v1a1 1 0 01-1 1H3a1 1 0 01-1-1v-2a1 1 0 01.293-.707L8.196 8.39A5.002 5.002 0 018 7zm5-3a.75.75 0 000 1.5A1.5 1.5 0 0114.5 7 .75.75 0 0016 7a3 3 0 00-3-3z" clip-rule="evenodd"/></svg>
+        Update Token
       </button>
       <div class="export-divider">Export</div>
       <button class="export-btn" onclick="exportHTML('current')">
@@ -400,15 +443,32 @@
 
 <script>
 // ── GitHub Config ──────────────────────────────────────────────────────────
-const GH_TOKEN = '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';
 const GH_REPO  = 'gouravbhati152/qa-manager';
 const GH_FILE  = 'data.json';
 const GH_API   = `https://api.github.com/repos/${GH_REPO}/contents/${GH_FILE}`;
-const GH_HEAD  = {
-  'Authorization': `token ${GH_TOKEN}`,
-  'Content-Type': 'application/json',
-  'Accept': 'application/vnd.github+json'
-};
+
+function getToken() {
+  return localStorage.getItem('gh_token') || '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';
+}
+function getHeaders() {
+  return {
+    'Authorization': `token ${getToken()}`,
+    'Content-Type': 'application/json',
+    'Accept': 'application/vnd.github+json'
+  };
+}
+
+function updateToken() {
+  const newToken = prompt('Paste your new GitHub Personal Access Token:\n(Settings → Developer settings → Personal access tokens → Tokens classic)');
+  if (!newToken?.trim()) return;
+  localStorage.setItem('gh_token', newToken.trim());
+  showToast('Token updated! Reconnecting…');
+  setStatus('loading', 'Reconnecting…');
+  // Reload data with new token
+  loadData().then(() => {
+    renderSidebar(); renderHeader(); renderList();
+  });
+}
 
 // ── Seed data (your existing Q&As) ────────────────────────────────────────
 const SEED_SESSIONS = [
@@ -455,7 +515,7 @@ function setStatus(state, msg) {
 async function loadData() {
   setStatus('loading', 'Connecting to GitHub…');
   try {
-    const res = await fetch(GH_API + '?t=' + Date.now(), { headers: GH_HEAD });
+    const res = await fetch(GH_API + '?t=' + Date.now(), { headers: getHeaders() });
     if (!res.ok) throw new Error('GitHub fetch failed: ' + res.status);
     const json = await res.json();
     ghFileSha = json.sha;
@@ -488,18 +548,21 @@ async function save() {
   setStatus('saving', 'Saving…');
   try {
     // Always fetch the latest SHA before writing to avoid 409 conflicts
-    const getRes = await fetch(GH_API + '?t=' + Date.now(), { headers: GH_HEAD });
-    if (!getRes.ok) throw new Error('Could not fetch latest file SHA');
+    const getRes = await fetch(GH_API + '?t=' + Date.now(), { headers: getHeaders() });
+    if (!getRes.ok) {
+      const e1 = await getRes.json().catch(() => ({}));
+      throw new Error(`SHA fetch failed (${getRes.status}): ${e1.message || 'unknown'}`);
+    }
     const getJson = await getRes.json();
-    ghFileSha = getJson.sha; // always use the freshest SHA
+    ghFileSha = getJson.sha;
 
     const body    = { sessions, qas };
     const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(body, null, 2))));
     const payload = { message: 'update qa data', content: encoded, sha: ghFileSha };
-    const res = await fetch(GH_API, { method: 'PUT', headers: GH_HEAD, body: JSON.stringify(payload) });
+    const res = await fetch(GH_API, { method: 'PUT', headers: getHeaders(), body: JSON.stringify(payload) });
     if (!res.ok) {
-      const err = await res.json();
-      throw new Error(err.message || 'save failed');
+      const err = await res.json().catch(() => ({}));
+      throw new Error(`PUT failed (${res.status}): ${err.message || 'unknown'}`);
     }
     const json = await res.json();
     ghFileSha = json.content.sha;
