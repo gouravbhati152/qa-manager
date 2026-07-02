@@ -31,6 +31,12 @@
   ],
   "qas": [
     {
+      "id": "qa-1782988253710",
+      "sessionId": "sess-1775111710302",
+      "question": "Suppose you have two DataFrames:  Write PySpark code to perform a left join between employees and departments on dept_id, and display the result.",
+      "answer": "` df_emp.join(df_dept, on=\"dept_id\", how=\"left\").show()`\n```\ndf_emp.join(df_dept, on=\"dept_id\", how=\"left\") \\\n      .select(\"emp_id\", \"name\", \"dept_id\", \"dept_name\") \\\n      .show()\n\t  ```"
+    },
+    {
       "id": "qa-1782988192890",
       "sessionId": "sess-1775111710302",
       "question": "Group by department. \tCalculate the average salary for each department. \tRename the average salary column to avg_salary. \tDisplay the result.",
