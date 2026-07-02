@@ -31,6 +31,12 @@
   ],
   "qas": [
     {
+      "id": "qa-1782991288404",
+      "sessionId": "sess-1775111710302",
+      "question": "suppose we want to remove the null value in salary column",
+      "answer": "```\nfrom pyspark.sql.functions import col\n\ndf.filter(col(\"salary\").isNotNull()).show()\n```\n```\ndf.dropna(subset=[\"salary\"]).show()\n```"
+    },
+    {
       "id": "qa-1782991148864",
       "sessionId": "sess-1775111710302",
       "question": "for distinct",
