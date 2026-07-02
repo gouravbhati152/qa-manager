@@ -31,6 +31,12 @@
   ],
   "qas": [
     {
+      "id": "qa-1782988328227",
+      "sessionId": "sess-1775111710302",
+      "question": "Add a new column called bonus such that:  If salary >= 70000, bonus is 10000 Otherwise, bonus is 5000",
+      "answer": "Write the PySpark code. (Hint: use when() and otherwise().)\n```\nfrom pyspark.sql.functions import when\n\ndf.withColumn(\n    \"new_col\",\n    when(condition, value_if_true).otherwise(value_if_false)\n)\n```\n\n```\nfrom pyspark.sql.functions import when, col\n\ndf.withColumn(\n    \"bonus\",\n    when(col(\"salary\") >= 70000, 10000)\n    .otherwise(5000)\n).show()\n```"
+    },
+    {
       "id": "qa-1782988253710",
       "sessionId": "sess-1775111710302",
       "question": "Suppose you have two DataFrames:  Write PySpark code to perform a left join between employees and departments on dept_id, and display the result.",
