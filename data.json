@@ -31,6 +31,12 @@
   ],
   "qas": [
     {
+      "id": "qa-1782989996340",
+      "sessionId": "sess-1775111710302",
+      "question": "orderby in pyspark",
+      "answer": "```\nfrom pyspark.sql.functions import desc\ndf.orderBy(desc(\"salary\")).show()\n```"
+    },
+    {
       "id": "qa-1782988539283",
       "sessionId": "sess-1775111710302",
       "question": "What PySpark function is used to add a new column to a DataFrame?",
