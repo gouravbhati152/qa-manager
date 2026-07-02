@@ -31,6 +31,12 @@
   ],
   "qas": [
     {
+      "id": "qa-1782988192890",
+      "sessionId": "sess-1775111710302",
+      "question": "Group by department. \tCalculate the average salary for each department. \tRename the average salary column to avg_salary. \tDisplay the result.",
+      "answer": "```\nfrom pyspark.sql.functions import avg\n\n   df.groupBy(\"department\") \\\n  .agg(avg(\"salary\").alias(\"avg_salary\")) \\\n  .show()\n ``` \n  OR \n  ```\n  df.groupBy(\"department\") \\\n  .avg(\"salary\") \\\n  .withColumnRenamed(\"avg(salary)\", \"avg_salary\") \\\n  .show()\n```"
+    },
+    {
       "id": "qa-1782988064398",
       "sessionId": "sess-1775111710302",
       "question": "Select only the name and salary columns.   Filter employees whose salary is greater than 60000.   Display the result.",
