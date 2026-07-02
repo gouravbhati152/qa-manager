@@ -31,6 +31,12 @@
   ],
   "qas": [
     {
+      "id": "qa-1782988539283",
+      "sessionId": "sess-1775111710302",
+      "question": "What PySpark function is used to add a new column to a DataFrame?",
+      "answer": "`df.withColumn(column_name, column_expression)`\n\n```\nfrom pyspark.sql.functions import lit\n\ndf.withColumn(\"country\", lit(\"India\")).show()\n```"
+    },
+    {
       "id": "qa-1782988328227",
       "sessionId": "sess-1775111710302",
       "question": "Add a new column called bonus such that:  If salary >= 70000, bonus is 10000 Otherwise, bonus is 5000",
