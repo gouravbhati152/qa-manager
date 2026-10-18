@@ -35,6 +35,12 @@
   ],
   "qas": [
     {
+      "id": "qa-1792345569597",
+      "sessionId": "sess-1792345428010",
+      "question": "if they ask how they work together",
+      "answer": "A common architecture is React → API Gateway → Lambda → database, with Cognito handling authentication. The user authenticates through Cognito and receives a JWT. The client sends that token with API requests, API Gateway validates it, and then invokes the appropriate Lambda function."
+    },
+    {
       "id": "qa-1792345529577",
       "sessionId": "sess-1792345428010",
       "question": "What is Lambda?",
