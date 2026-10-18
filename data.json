@@ -35,6 +35,12 @@
   ],
   "qas": [
     {
+      "id": "qa-1792345475606",
+      "sessionId": "sess-1792345428010",
+      "question": "What is Cognito?",
+      "answer": "Cognito is an AWS identity service that handles user authentication and authorization. It can manage users and issue JWT tokens, which can then be used to secure APIs.\""
+    },
+    {
       "id": "qa-1786597094800",
       "sessionId": "sess-1775628484669",
       "question": "Tell me about your recent project.",
