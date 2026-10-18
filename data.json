@@ -35,6 +35,12 @@
   ],
   "qas": [
     {
+      "id": "qa-1792345670488",
+      "sessionId": "sess-1792345428010",
+      "question": "What is API Gateway?",
+      "answer": "\"API Gateway is a managed API entry point. It receives HTTP requests, handles things like routing, authentication, throttling and CORS, and can invoke backend services such as Lambda.\""
+    },
+    {
       "id": "qa-1792345569597",
       "sessionId": "sess-1792345428010",
       "question": "if they ask how they work together",
