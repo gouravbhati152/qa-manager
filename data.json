@@ -35,6 +35,12 @@
   ],
   "qas": [
     {
+      "id": "qa-1792345529577",
+      "sessionId": "sess-1792345428010",
+      "question": "What is Lambda?",
+      "answer": "\"Lambda is AWS's serverless compute service. We upload code as a function, and AWS executes it in response to events such as API requests, scheduled events, S3 events or queue messages. We don't have to manage the underlying servers.\""
+    },
+    {
       "id": "qa-1792345475606",
       "sessionId": "sess-1792345428010",
       "question": "What is Cognito?",
