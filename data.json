@@ -38,7 +38,7 @@
       "id": "qa-1792392389080",
       "sessionId": "sess-1792345428010",
       "question": "decorator",
-      "answer": "A decorator in Python is a function that adds or changes the behavior of another function without modifying its actual code.\n\n`def my_decorator(func):\n    def wrapper():\n        print(\"Before function\")\n        func()\n        print(\"After function\")\n\n    return wrapper\n\n\n@my_decorator\ndef hello():\n    print(\"Hello World\")\n\n\nhello()`"
+      "answer": "A decorator in Python is a function that adds or changes the behavior of another function without modifying its actual code.\n\n```\ndef my_decorator(func):\n    def wrapper():\n        print(\"Before function\")\n        func()\n        print(\"After function\")\n\n    return wrapper\n\n\n@my_decorator\ndef hello():\n    print(\"Hello World\")\n\n\nhello()\n```"
     },
     {
       "id": "qa-1792345947973",
