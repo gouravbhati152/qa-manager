@@ -38,7 +38,7 @@
       "id": "qa-1792740528170",
       "sessionId": "sess-1792345428010",
       "question": "design patterns",
-      "answer": "\"We use the Repository pattern to isolate database access from business logic. In our SP Maturity module, database operations such as fetching incremental records, reading audit information, and updating provision records are separated from the calculation and processing logic.\""
+      "answer": "\"We use the Repository pattern to isolate database access from business logic. In our SP Maturity module, database operations such as fetching incremental records, reading audit information, and updating provision records are separated from the calculation and processing logic.\"\n\n\"We follow a Service Layer pattern where the Lambda acts as the entry point and delegates the actual SP Maturity business processing to the service layer. This keeps the trigger mechanism separate from the business logic.\"\n\n\"We use the Strategy concept for calculation logic. The main processing flow delegates specific calculation rules, such as rate/maturity calculations, to separate functions. This prevents the main workflow from becoming tightly coupled to individual calculation algorithms.\""
     },
     {
       "id": "qa-1792414266150",
