@@ -448,7 +448,7 @@ const GH_FILE  = 'data.json';
 const GH_API   = `https://api.github.com/repos/${GH_REPO}/contents/${GH_FILE}`;
 
 function getToken() {
-  return localStorage.getItem('gh_token') || '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';
+  return localStorage.getItem('gh_token') || '';
 }
 function getHeaders() {
   return {
@@ -514,16 +514,36 @@ function setStatus(state, msg) {
 // ── GitHub load ────────────────────────────────────────────────────────────
 async function loadData() {
   setStatus('loading', 'Connecting to GitHub…');
+  if (!getToken()) {
+    sessions = SEED_SESSIONS;
+    qas      = SEED_QAS;
+    activeSessionId = sessions[0]?.id || null;
+    setStatus('error', 'No token — click "Update Token"');
+    showToast('Add your GitHub token using "Update Token" in the sidebar.');
+    return;
+  }
   try {
     const res = await fetch(GH_API + '?t=' + Date.now(), { headers: getHeaders() });
+
+    // data.json was deleted or never created → recreate it from the built-in Q&As
+    if (res.status === 404) {
+      ghFileSha = null;
+      sessions = SEED_SESSIONS;
+      qas      = SEED_QAS;
+      await save();
+      showToast('data.json was missing — recreated it.');
+      activeSessionId = sessions[0]?.id || null;
+      return;
+    }
+    if (res.status === 401) throw new Error('Token invalid or expired — click "Update Token"');
     if (!res.ok) throw new Error('GitHub fetch failed: ' + res.status);
+
     const json = await res.json();
     ghFileSha = json.sha;
-    const content = json.content.replace(/\n/g, '');
-    const decoded = JSON.parse(atob(content));
+    const decoded = JSON.parse(decodeURIComponent(escape(atob(json.content.replace(/\n/g, '')))));
 
     if (!decoded.sessions || decoded.sessions.length === 0) {
-      // First run — push seed data to GitHub
+      // File exists but is empty — push seed data to GitHub
       sessions = SEED_SESSIONS;
       qas      = SEED_QAS;
       await save();
@@ -534,11 +554,11 @@ async function loadData() {
     setStatus('saved', 'Synced with GitHub');
   } catch(e) {
     console.error('GitHub load error:', e);
-    // Fall back to seed data so app still works offline
+    // Fall back to seed data so the app still opens
     sessions = SEED_SESSIONS;
     qas      = SEED_QAS;
-    setStatus('error', 'Offline — data not saved');
-    showToast('Could not reach GitHub. Working offline.');
+    setStatus('error', e.message.startsWith('Token') ? e.message : 'Offline — data not saved');
+    showToast(e.message.startsWith('Token') ? e.message : 'Could not reach GitHub. Working offline.');
   }
   activeSessionId = sessions[0]?.id || null;
 }
@@ -549,16 +569,20 @@ async function save() {
   try {
     // Always fetch the latest SHA before writing to avoid 409 conflicts
     const getRes = await fetch(GH_API + '?t=' + Date.now(), { headers: getHeaders() });
-    if (!getRes.ok) {
+    if (getRes.status === 404) {
+      ghFileSha = null; // file doesn't exist yet → PUT without sha creates it
+    } else if (!getRes.ok) {
       const e1 = await getRes.json().catch(() => ({}));
       throw new Error(`SHA fetch failed (${getRes.status}): ${e1.message || 'unknown'}`);
+    } else {
+      const getJson = await getRes.json();
+      ghFileSha = getJson.sha;
     }
-    const getJson = await getRes.json();
-    ghFileSha = getJson.sha;
 
     const body    = { sessions, qas };
     const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(body, null, 2))));
-    const payload = { message: 'update qa data', content: encoded, sha: ghFileSha };
+    const payload = { message: 'update qa data', content: encoded };
+    if (ghFileSha) payload.sha = ghFileSha;
     const res = await fetch(GH_API, { method: 'PUT', headers: getHeaders(), body: JSON.stringify(payload) });
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
